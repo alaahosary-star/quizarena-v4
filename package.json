@@ -1,0 +1,35 @@
+{
+  "name": "quizarena",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.45.0",
+    "canvas-confetti": "^1.9.3",
+    "framer-motion": "^11.11.0",
+    "howler": "^2.2.4",
+    "lucide-react": "^0.451.0",
+    "next": "15.0.0",
+    "qrcode.react": "^4.0.1",
+    "react": "19.0.0-rc-65a56d0e-20241020",
+    "react-dom": "19.0.0-rc-65a56d0e-20241020",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/howler": "^2.2.12",
+    "@types/node": "^22",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "typescript": "^5.6.0"
+  }
+}

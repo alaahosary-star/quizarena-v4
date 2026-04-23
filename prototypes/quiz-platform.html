@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QuizArena — منصة المسابقات التفاعلية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0B1E;
+    --bg-2:#12122E;
+    --card:#1A1A3A;
+    --card-2:#23234A;
+    --border:#2A2A55;
+    --text:#F5F5FF;
+    --muted:#8B8BB5;
+    --pink:#FF3366;
+    --pink-2:#FF0844;
+    --green:#00E676;
+    --yellow:#FFD700;
+    --blue:#3D5AFE;
+    --purple:#7C4DFF;
+    --danger:#FF1744;
+    --shadow:0 20px 60px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Tajawal',sans-serif;
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(124,77,255,.18), transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(255,51,102,.15), transparent 50%),
+      var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{font-family:'Cairo',sans-serif;font-weight:900;letter-spacing:-.5px}
+
+  /* ============ TOP NAV ============ */
+  .nav{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:18px 28px;
+    background:rgba(11,11,30,.7);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--border);
+    position:sticky;top:0;z-index:100;
+  }
+  .logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:22px;font-family:'Cairo'}
+  .logo-mark{
+    width:38px;height:38px;border-radius:12px;
+    background:conic-gradient(from 45deg, var(--pink), var(--yellow), var(--green), var(--blue), var(--pink));
+    display:grid;place-items:center;color:#0B0B1E;font-weight:900;
+    box-shadow:0 6px 20px rgba(255,51,102,.35);
+  }
+  .nav-tabs{display:flex;gap:8px;background:var(--card);padding:6px;border-radius:14px;border:1px solid var(--border)}
+  .tab-btn{
+    padding:10px 20px;border:0;background:transparent;color:var(--muted);
+    border-radius:10px;font-family:'Cairo';font-weight:700;cursor:pointer;font-size:14px;
+    transition:all .25s;
+  }
+  .tab-btn.active{background:linear-gradient(135deg,var(--pink),var(--pink-2));color:#fff;box-shadow:0 6px 18px rgba(255,51,102,.4)}
+  .sound-toggle{
+    width:44px;height:44px;border-radius:12px;border:1px solid var(--border);
+    background:var(--card);color:var(--text);cursor:pointer;font-size:18px;
+    display:grid;place-items:center;transition:all .2s;
+  }
+  .sound-toggle:hover{border-color:var(--pink);color:var(--pink)}
+
+  /* ============ VIEWS ============ */
+  .view{display:none;padding:32px 28px;max-width:1400px;margin:0 auto}
+  .view.active{display:block;animation:fadeIn .4s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  /* ============ TEACHER VIEW ============ */
+  .section-title{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+  .section-title h2{font-size:28px}
+  .section-title .chip{background:var(--card);color:var(--muted);padding:4px 12px;border-radius:999px;font-size:12px;border:1px solid var(--border)}
+
+  .builder-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:24px}
+  @media(max-width:900px){.builder-grid{grid-template-columns:1fr}}
+
+  .card{
+    background:linear-gradient(180deg,var(--card),var(--card-2));
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:24px;
+    box-shadow:var(--shadow);
+  }
+  .card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+  .card-head h3{font-size:18px}
+
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:8px;font-family:'Cairo'}
+  .field input[type=text], .field textarea, .field select{
+    width:100%;padding:14px 16px;background:var(--bg-2);
+    border:1px solid var(--border);border-radius:12px;color:var(--text);
+    font-family:'Tajawal';font-size:15px;transition:all .2s;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus{
+    outline:none;border-color:var(--pink);box-shadow:0 0 0 3px rgba(255,51,102,.15);
+  }
+
+  .q-type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+  @media(max-width:600px){.q-type-grid{grid-template-columns:repeat(2,1fr)}}
+  .q-type{
+    padding:12px 8px;background:var(--bg-2);border:1px solid var(--border);
+    border-radius:12px;cursor:pointer;text-align:center;font-size:12px;
+    font-family:'Cairo';font-weight:700;transition:all .2s;color:var(--muted);
+  }
+  .q-type .ico{display:block;font-size:20px;margin-bottom:4px}
+  .q-type.active{background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;border-color:transparent;transform:translateY(-2px);box-shadow:0 8px 20px rgba(124,77,255,.35)}
+
+  .time-picker{display:flex;gap:8px;flex-wrap:wrap}
+  .time-chip{
+    padding:10px 16px;background:var(--bg-2);border:1px solid var(--border);
+    border-radius:10px;cursor:pointer;font-family:'Cairo';font-weight:700;font-size:14px;
+    color:var(--muted);transition:all .2s;
+  }
+  .time-chip.active{background:linear-gradient(135deg,var(--yellow),#FF8F00);color:#111;border-color:transparent;box-shadow:0 6px 16px rgba(255,215,0,.3)}
+  .time-chip:hover:not(.active){border-color:var(--yellow);color:var(--yellow)}
+
+  .choices-list{display:flex;flex-direction:column;gap:10px}
+  .choice-row{
+    display:flex;gap:10px;align-items:center;padding:10px;
+    background:var(--bg-2);border:1px solid var(--border);border-radius:12px;
+  }
+  .choice-row input[type=text]{flex:1;background:transparent;border:0;color:var(--text);font-size:15px;padding:8px}
+  .choice-row input[type=text]:focus{outline:none}
+  .correct-toggle{
+    width:36px;height:36px;border-radius:50%;border:2px solid var(--border);
+    background:transparent;cursor:pointer;display:grid;place-items:center;
+    color:var(--muted);transition:all .2s;flex-shrink:0;
+  }
+  .correct-toggle.active{background:var(--green);border-color:var(--green);color:#0B0B1E}
+  .del-choice{background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:18px;padding:4px 8px}
+  .del-choice:hover{color:var(--danger)}
+
+  .btn{
+    padding:14px 22px;border:0;border-radius:12px;font-family:'Cairo';font-weight:700;
+    cursor:pointer;font-size:15px;transition:all .2s;display:inline-flex;align-items:center;gap:8px;
+  }
+  .btn-primary{background:linear-gradient(135deg,var(--pink),var(--pink-2));color:#fff;box-shadow:0 8px 22px rgba(255,51,102,.4)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(255,51,102,.55)}
+  .btn-ghost{background:var(--bg-2);color:var(--text);border:1px solid var(--border)}
+  .btn-ghost:hover{border-color:var(--pink)}
+  .btn-success{background:linear-gradient(135deg,var(--green),#00C853);color:#0B0B1E;box-shadow:0 8px 22px rgba(0,230,118,.35)}
+  .btn-big{padding:18px 36px;font-size:18px;border-radius:16px}
+
+  /* Preview card */
+  .preview-question{
+    background:linear-gradient(135deg,#1E1E45,#2A2A5A);
+    border-radius:16px;padding:20px;min-height:200px;
+    border:2px dashed var(--border);
+  }
+  .preview-q-text{font-size:20px;font-weight:700;margin-bottom:16px;font-family:'Cairo'}
+  .preview-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .preview-choice{
+    padding:14px;border-radius:12px;background:var(--bg-2);
+    border:1px solid var(--border);font-weight:600;display:flex;align-items:center;gap:10px;
+  }
+  .preview-choice .letter{
+    width:28px;height:28px;border-radius:50%;background:var(--pink);
+    display:grid;place-items:center;font-weight:900;color:#fff;font-size:13px;
+  }
+  .preview-choice:nth-child(2) .letter{background:var(--blue)}
+  .preview-choice:nth-child(3) .letter{background:var(--yellow);color:#111}
+  .preview-choice:nth-child(4) .letter{background:var(--green);color:#111}
+
+  /* ============ LIVE LOBBY ============ */
+  .lobby{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:stretch}
+  @media(max-width:900px){.lobby{grid-template-columns:1fr}}
+
+  .code-display{text-align:center;padding:40px 24px}
+  .code-label{color:var(--muted);font-family:'Cairo';font-size:14px;margin-bottom:10px}
+  .code-number{
+    font-family:'Space Grotesk',monospace;font-size:72px;font-weight:700;
+    letter-spacing:12px;
+    background:linear-gradient(135deg,var(--yellow),var(--pink));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    margin:10px 0 20px;
+  }
+  .qr-box{
+    width:180px;height:180px;background:#fff;border-radius:16px;
+    margin:16px auto;padding:14px;display:grid;place-items:center;
+  }
+  .qr-box svg{width:100%;height:100%}
+
+  .participants-box h3{margin-bottom:14px}
+  .participant-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;max-height:320px;overflow-y:auto}
+  .participant{
+    background:var(--bg-2);border:1px solid var(--border);border-radius:12px;
+    padding:12px 8px;text-align:center;animation:popIn .4s ease;
+  }
+  @keyframes popIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+  .participant .avatar{
+    width:40px;height:40px;border-radius:50%;margin:0 auto 6px;
+    display:grid;place-items:center;font-weight:900;color:#fff;font-family:'Cairo';
+  }
+  .participant-name{font-size:12px;font-weight:700;color:var(--text)}
+
+  /* ============ PLAY VIEW (student) ============ */
+  .play-stage{
+    max-width:720px;margin:0 auto;
+  }
+  .play-header{
+    display:flex;justify-content:space-between;align-items:center;
+    background:var(--card);border:1px solid var(--border);
+    border-radius:16px;padding:14px 20px;margin-bottom:18px;
+  }
+  .q-progress{font-family:'Cairo';font-weight:700;color:var(--muted)}
+  .q-progress b{color:var(--text)}
+
+  /* Timer */
+  .timer-ring{
+    width:120px;height:120px;position:relative;margin:0 auto 24px;
+  }
+  .timer-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .timer-ring .track{fill:none;stroke:var(--border);stroke-width:8}
+  .timer-ring .bar{fill:none;stroke:var(--green);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1s linear,stroke .3s}
+  .timer-ring.warning .bar{stroke:var(--yellow)}
+  .timer-ring.danger .bar{stroke:var(--pink);animation:pulseRing 1s infinite}
+  @keyframes pulseRing{0%,100%{filter:drop-shadow(0 0 0 rgba(255,51,102,0))}50%{filter:drop-shadow(0 0 14px rgba(255,51,102,.9))}}
+  .timer-text{
+    position:absolute;inset:0;display:grid;place-items:center;
+    font-family:'Space Grotesk';font-size:40px;font-weight:700;
+  }
+  .timer-ring.danger .timer-text{color:var(--pink);animation:blink .5s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+  .question-card{
+    background:linear-gradient(135deg,#1E1E45,#2A2A5A);
+    border:1px solid var(--border);border-radius:20px;padding:32px 24px;
+    text-align:center;margin-bottom:24px;box-shadow:var(--shadow);
+  }
+  .question-card .q-text{font-size:24px;font-weight:900;font-family:'Cairo';line-height:1.5}
+
+  .answer-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:500px){.answer-grid{grid-template-columns:1fr}}
+  .answer-btn{
+    padding:22px 18px;border-radius:16px;border:0;cursor:pointer;
+    font-family:'Cairo';font-weight:700;font-size:17px;color:#fff;
+    display:flex;align-items:center;gap:12px;text-align:right;
+    transition:all .2s;position:relative;overflow:hidden;
+  }
+  .answer-btn:hover:not(:disabled){transform:translateY(-3px) scale(1.02);filter:brightness(1.15)}
+  .answer-btn:disabled{opacity:.5;cursor:not-allowed}
+  .answer-btn .letter{
+    width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.25);
+    display:grid;place-items:center;font-weight:900;font-size:18px;flex-shrink:0;
+  }
+  .answer-btn.c1{background:linear-gradient(135deg,#FF3366,#E91E63)}
+  .answer-btn.c2{background:linear-gradient(135deg,#3D5AFE,#2962FF)}
+  .answer-btn.c3{background:linear-gradient(135deg,#FFD700,#FF8F00);color:#1a1a1a}
+  .answer-btn.c4{background:linear-gradient(135deg,#00E676,#00C853);color:#0B0B1E}
+  .answer-btn.selected{transform:scale(.95);box-shadow:0 0 0 4px #fff inset}
+  .answer-btn.correct-flash{animation:correctFlash .8s ease}
+  .answer-btn.wrong-flash{animation:wrongFlash .6s ease}
+  @keyframes correctFlash{
+    0%,100%{transform:scale(1)}
+    50%{transform:scale(1.08);box-shadow:0 0 0 6px var(--green),0 0 40px var(--green)}
+  }
+  @keyframes wrongFlash{
+    0%,100%{transform:translateX(0)}
+    25%{transform:translateX(-10px)}
+    75%{transform:translateX(10px)}
+  }
+
+  /* Feedback */
+  .feedback{
+    text-align:center;padding:40px 20px;border-radius:20px;
+    font-family:'Cairo';animation:popIn .4s ease;
+  }
+  .feedback.correct{background:linear-gradient(135deg,rgba(0,230,118,.15),rgba(0,200,83,.1));border:2px solid var(--green)}
+  .feedback.wrong{background:linear-gradient(135deg,rgba(255,51,102,.15),rgba(233,30,99,.1));border:2px solid var(--pink)}
+  .feedback .big-icon{font-size:80px;margin-bottom:12px}
+  .feedback h3{font-size:32px;margin-bottom:8px}
+  .feedback .pts{color:var(--yellow);font-size:22px;font-weight:900;margin-top:10px}
+
+  /* ============ LEADERBOARD ============ */
+  .leaderboard-wrap{max-width:800px;margin:0 auto}
+  .podium{
+    display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:12px;
+    align-items:end;margin-bottom:32px;min-height:300px;
+  }
+  .podium-col{
+    background:linear-gradient(180deg,var(--card),var(--card-2));
+    border-radius:16px 16px 0 0;padding:20px 14px;text-align:center;
+    border:1px solid var(--border);border-bottom:0;
+    animation:riseUp .8s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes riseUp{from{transform:translateY(100%);opacity:0}to{transform:none;opacity:1}}
+  .podium-col.rank-1{height:280px;animation-delay:.4s;opacity:0;animation-fill-mode:forwards;
+    background:linear-gradient(180deg,rgba(255,215,0,.25),rgba(255,143,0,.1));border-color:var(--yellow)}
+  .podium-col.rank-2{height:230px;animation-delay:.2s;opacity:0;animation-fill-mode:forwards;
+    background:linear-gradient(180deg,rgba(192,192,192,.2),rgba(192,192,192,.05));border-color:#C0C0C0}
+  .podium-col.rank-3{height:190px;animation-delay:0s;opacity:0;animation-fill-mode:forwards;
+    background:linear-gradient(180deg,rgba(205,127,50,.2),rgba(205,127,50,.05));border-color:#CD7F32}
+  .medal{font-size:48px;margin-bottom:10px}
+  .podium-col .avatar-big{
+    width:70px;height:70px;border-radius:50%;margin:0 auto 10px;
+    display:grid;place-items:center;font-weight:900;color:#fff;font-size:24px;font-family:'Cairo';
+    border:3px solid var(--text);
+  }
+  .podium-name{font-family:'Cairo';font-weight:900;font-size:17px;margin-bottom:4px}
+  .podium-score{font-family:'Space Grotesk';font-size:24px;font-weight:700;color:var(--yellow)}
+  .podium-col.rank-2 .podium-score{color:#C0C0C0}
+  .podium-col.rank-3 .podium-score{color:#CD7F32}
+
+  .rank-list{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+  .rank-row{
+    display:grid;grid-template-columns:50px 50px 1fr auto auto;gap:14px;
+    align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);
+    transition:all .25s;
+  }
+  .rank-row:last-child{border-bottom:0}
+  .rank-row:hover{background:var(--card-2)}
+  .rank-num{font-family:'Space Grotesk';font-weight:700;font-size:18px;color:var(--muted);text-align:center}
+  .rank-row .avatar{
+    width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+    font-weight:900;color:#fff;font-family:'Cairo';font-size:14px;
+  }
+  .rank-name{font-family:'Cairo';font-weight:700}
+  .rank-time{color:var(--muted);font-family:'Space Grotesk';font-size:13px}
+  .rank-score{font-family:'Space Grotesk';font-weight:700;font-size:18px;color:var(--yellow)}
+
+  /* Confetti */
+  .confetti{position:fixed;top:-20px;width:10px;height:10px;z-index:999;pointer-events:none;animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+  /* Utilities */
+  .row{display:flex;gap:12px;align-items:center}
+  .between{display:flex;justify-content:space-between;align-items:center}
+  .mt-auto{margin-top:auto}
+  .flex-col{display:flex;flex-direction:column}
+  .grow{flex-grow:1}
+  .small{font-size:13px;color:var(--muted)}
+  .pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;font-family:'Cairo'}
+  .pill.live{background:var(--pink);color:#fff;animation:pulse 1.5s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+  /* Scrollbar */
+  ::-webkit-scrollbar{width:8px}
+  ::-webkit-scrollbar-track{background:var(--bg-2)}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+  ::-webkit-scrollbar-thumb:hover{background:var(--pink)}
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <div class="logo">
+    <div class="logo-mark">Q</div>
+    <span>QuizArena</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="tab-btn active" data-view="teacher">🧑‍🏫 المعلم</button>
+    <button class="tab-btn" data-view="lobby">📡 الجلسة</button>
+    <button class="tab-btn" data-view="play">🎮 الطالب</button>
+    <button class="tab-btn" data-view="results">🏆 النتائج</button>
+  </div>
+  <button class="sound-toggle" id="soundToggle" title="كتم/تفعيل الصوت">🔊</button>
+</nav>
+
+<!-- ============ VIEW 1: TEACHER BUILDER ============ -->
+<section class="view active" id="view-teacher">
+  <div class="section-title">
+    <h2>إنشاء نشاط تفاعلي</h2>
+    <span class="chip">المعلم</span>
+  </div>
+
+  <div class="builder-grid">
+    <!-- LEFT: Editor -->
+    <div class="card">
+      <div class="card-head">
+        <h3>📝 محرر السؤال</h3>
+        <span class="small">السؤال 1 من 5</span>
+      </div>
+
+      <div class="field">
+        <label>نوع السؤال</label>
+        <div class="q-type-grid">
+          <div class="q-type active" data-type="mcq"><span class="ico">🎯</span>اختيار متعدد</div>
+          <div class="q-type" data-type="tf"><span class="ico">⚖️</span>صح/خطأ</div>
+          <div class="q-type" data-type="fill"><span class="ico">✍️</span>أكمل الفراغ</div>
+          <div class="q-type" data-type="match"><span class="ico">🔗</span>مطابقة</div>
+          <div class="q-type" data-type="order"><span class="ico">🔢</span>ترتيب</div>
+          <div class="q-type" data-type="drag"><span class="ico">🖱️</span>سحب وإفلات</div>
+          <div class="q-type" data-type="image"><span class="ico">🖼️</span>سؤال بصورة</div>
+          <div class="q-type" data-type="connect"><span class="ico">🧩</span>توصيل</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>نص السؤال</label>
+        <input type="text" id="qText" value="ما هو العنصر الأكثر انتشارًا في الغلاف الجوي للأرض؟" />
+      </div>
+
+      <div class="field">
+        <label>⏱️ زمن السؤال (ثانية)</label>
+        <div class="time-picker" id="timePicker">
+          <div class="time-chip" data-time="10">10</div>
+          <div class="time-chip active" data-time="20">20</div>
+          <div class="time-chip" data-time="30">30</div>
+          <div class="time-chip" data-time="40">40</div>
+          <div class="time-chip" data-time="50">50</div>
+          <div class="time-chip" data-time="60">60</div>
+          <input type="number" min="5" max="300" placeholder="مخصص" style="width:90px;padding:10px 12px;background:var(--bg-2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Cairo';text-align:center" id="customTime">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>الخيارات (اختر الإجابة الصحيحة ✓)</label>
+        <div class="choices-list" id="choicesList">
+          <div class="choice-row">
+            <button class="correct-toggle">✓</button>
+            <input type="text" value="الأكسجين" />
+            <button class="del-choice">✕</button>
+          </div>
+          <div class="choice-row">
+            <button class="correct-toggle active">✓</button>
+            <input type="text" value="النيتروجين" />
+            <button class="del-choice">✕</button>
+          </div>
+          <div class="choice-row">
+            <button class="correct-toggle">✓</button>
+            <input type="text" value="ثاني أكسيد الكربون" />
+            <button class="del-choice">✕</button>
+          </div>
+          <div class="choice-row">
+            <button class="correct-toggle">✓</button>
+            <input type="text" value="الهيدروجين" />
+            <button class="del-choice">✕</button>
+          </div>
+        </div>
+        <button class="btn btn-ghost" style="margin-top:10px;width:100%" id="addChoiceBtn">+ إضافة خيار</button>
+      </div>
+
+      <div class="row" style="margin-top:20px">
+        <button class="btn btn-ghost">💾 حفظ</button>
+        <button class="btn btn-primary grow" id="startSessionBtn">🚀 بدء جلسة مباشرة</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Preview -->
+    <div class="card">
+      <div class="card-head">
+        <h3>👁️ معاينة حية</h3>
+        <span class="pill live">LIVE</span>
+      </div>
+      <div class="preview-question">
+        <div class="preview-q-text" id="previewQText">ما هو العنصر الأكثر انتشارًا في الغلاف الجوي للأرض؟</div>
+        <div class="preview-choices" id="previewChoices">
+          <div class="preview-choice"><span class="letter">أ</span><span>الأكسجين</span></div>
+          <div class="preview-choice"><span class="letter">ب</span><span>النيتروجين</span></div>
+          <div class="preview-choice"><span class="letter">ج</span><span>ثاني أكسيد الكربون</span></div>
+          <div class="preview-choice"><span class="letter">د</span><span>الهيدروجين</span></div>
+        </div>
+      </div>
+
+      <div style="margin-top:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+        <div style="background:var(--bg-2);padding:14px;border-radius:12px;text-align:center;border:1px solid var(--border)">
+          <div class="small">الوقت</div>
+          <div style="font-family:'Space Grotesk';font-size:22px;font-weight:700;color:var(--yellow)" id="prevTime">20s</div>
+        </div>
+        <div style="background:var(--bg-2);padding:14px;border-radius:12px;text-align:center;border:1px solid var(--border)">
+          <div class="small">النقاط</div>
+          <div style="font-family:'Space Grotesk';font-size:22px;font-weight:700;color:var(--green)">1000</div>
+        </div>
+        <div style="background:var(--bg-2);padding:14px;border-radius:12px;text-align:center;border:1px solid var(--border)">
+          <div class="small">النوع</div>
+          <div style="font-family:'Cairo';font-size:14px;font-weight:700;margin-top:4px" id="prevType">اختيار متعدد</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VIEW 2: LOBBY ============ -->
+<section class="view" id="view-lobby">
+  <div class="section-title">
+    <h2>غرفة الانتظار</h2>
+    <span class="pill live">LIVE</span>
+  </div>
+  <div class="lobby">
+    <div class="card code-display">
+      <div class="code-label">ادخل عبر quiz.arena على الموقع واستخدم الكود:</div>
+      <div class="code-number" id="sessionCode">847 193</div>
+      <div class="qr-box" id="qrBox">
+        <!-- QR placeholder -->
+        <svg viewBox="0 0 80 80">
+          <rect width="80" height="80" fill="#fff"/>
+          <g fill="#0B0B1E">
+            <!-- Corner markers -->
+            <rect x="4" y="4" width="18" height="18"/><rect x="7" y="7" width="12" height="12" fill="#fff"/><rect x="10" y="10" width="6" height="6"/>
+            <rect x="58" y="4" width="18" height="18"/><rect x="61" y="7" width="12" height="12" fill="#fff"/><rect x="64" y="10" width="6" height="6"/>
+            <rect x="4" y="58" width="18" height="18"/><rect x="7" y="61" width="12" height="12" fill="#fff"/><rect x="10" y="64" width="6" height="6"/>
+            <!-- Random dots -->
+            <rect x="28" y="8" width="4" height="4"/><rect x="36" y="12" width="4" height="4"/>
+            <rect x="44" y="8" width="4" height="4"/><rect x="28" y="20" width="4" height="4"/>
+            <rect x="40" y="24" width="4" height="4"/><rect x="48" y="20" width="4" height="4"/>
+            <rect x="8" y="32" width="4" height="4"/><rect x="16" y="36" width="4" height="4"/>
+            <rect x="24" y="32" width="4" height="4"/><rect x="32" y="40" width="4" height="4"/>
+            <rect x="44" y="36" width="4" height="4"/><rect x="52" y="40" width="4" height="4"/>
+            <rect x="60" y="32" width="4" height="4"/><rect x="68" y="36" width="4" height="4"/>
+            <rect x="8" y="44" width="4" height="4"/><rect x="20" y="48" width="4" height="4"/>
+            <rect x="32" y="52" width="4" height="4"/><rect x="44" y="48" width="4" height="4"/>
+            <rect x="56" y="52" width="4" height="4"/><rect x="68" y="48" width="4" height="4"/>
+            <rect x="28" y="60" width="4" height="4"/><rect x="36" y="64" width="4" height="4"/>
+            <rect x="44" y="60" width="4" height="4"/><rect x="52" y="68" width="4" height="4"/>
+            <rect x="64" y="60" width="4" height="4"/><rect x="72" y="64" width="4" height="4"/>
+          </g>
+        </svg>
+      </div>
+      <div class="small">امسح الكود بكاميرا الهاتف للدخول السريع</div>
+      <button class="btn btn-success btn-big" style="margin-top:24px" id="startPlayBtn">▶️ بدء المسابقة</button>
+    </div>
+
+    <div class="card participants-box">
+      <div class="card-head">
+        <h3>الطلاب المتصلون</h3>
+        <span class="pill" style="background:var(--green);color:#111">
+          <span id="pCount">8</span> طالب
+        </span>
+      </div>
+      <div class="participant-grid" id="participantGrid">
+        <!-- populated by JS -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VIEW 3: PLAY ============ -->
+<section class="view" id="view-play">
+  <div class="play-stage">
+    <div class="play-header">
+      <div class="q-progress">السؤال <b id="qCurrent">1</b> / <b id="qTotal">5</b></div>
+      <div class="row">
+        <span class="small">النقاط:</span>
+        <b style="color:var(--yellow);font-family:'Space Grotesk';font-size:20px" id="studentScore">0</b>
+      </div>
+    </div>
+
+    <div class="timer-ring" id="timerRing">
+      <svg viewBox="0 0 120 120">
+        <circle class="track" cx="60" cy="60" r="52"/>
+        <circle class="bar" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="0" id="timerBar"/>
+      </svg>
+      <div class="timer-text" id="timerText">20</div>
+    </div>
+
+    <div class="question-card">
+      <div class="q-text" id="playQText">ما هو العنصر الأكثر انتشارًا في الغلاف الجوي للأرض؟</div>
+    </div>
+
+    <div class="answer-grid" id="answerGrid">
+      <button class="answer-btn c1" data-idx="0"><span class="letter">أ</span>الأكسجين</button>
+      <button class="answer-btn c2" data-idx="1"><span class="letter">ب</span>النيتروجين</button>
+      <button class="answer-btn c3" data-idx="2"><span class="letter">ج</span>ثاني أكسيد الكربون</button>
+      <button class="answer-btn c4" data-idx="3"><span class="letter">د</span>الهيدروجين</button>
+    </div>
+
+    <div id="feedbackBox" style="display:none;margin-top:24px"></div>
+  </div>
+</section>
+
+<!-- ============ VIEW 4: RESULTS ============ -->
+<section class="view" id="view-results">
+  <div class="leaderboard-wrap">
+    <div class="section-title" style="justify-content:center">
+      <h2 style="font-size:36px">🏆 الترتيب النهائي</h2>
+    </div>
+
+    <div class="podium" id="podium">
+      <!-- 2nd -->
+      <div class="podium-col rank-2">
+        <div class="medal">🥈</div>
+        <div class="avatar-big" style="background:linear-gradient(135deg,#3D5AFE,#2962FF)">ف</div>
+        <div class="podium-name">فاطمة</div>
+        <div class="podium-score">4,620</div>
+      </div>
+      <!-- 1st -->
+      <div class="podium-col rank-1">
+        <div class="medal">🥇</div>
+        <div class="avatar-big" style="background:linear-gradient(135deg,#FFD700,#FF8F00);color:#111">ع</div>
+        <div class="podium-name">عائشة</div>
+        <div class="podium-score">4,890</div>
+      </div>
+      <!-- 3rd -->
+      <div class="podium-col rank-3">
+        <div class="medal">🥉</div>
+        <div class="avatar-big" style="background:linear-gradient(135deg,#FF3366,#E91E63)">م</div>
+        <div class="podium-name">محمد</div>
+        <div class="podium-score">4,150</div>
+      </div>
+    </div>
+
+    <div class="rank-list" id="rankList">
+      <div class="rank-row"><div class="rank-num">4</div><div class="avatar" style="background:#00E676;color:#111">خ</div><div class="rank-name">خالد أحمد</div><div class="rank-time">⚡ 12.4s</div><div class="rank-score">3,820</div></div>
+      <div class="rank-row"><div class="rank-num">5</div><div class="avatar" style="background:#7C4DFF">ن</div><div class="rank-name">نورة عبدالله</div><div class="rank-time">⚡ 14.1s</div><div class="rank-score">3,540</div></div>
+      <div class="rank-row"><div class="rank-num">6</div><div class="avatar" style="background:#FF3366">س</div><div class="rank-name">سارة محمد</div><div class="rank-time">⚡ 15.8s</div><div class="rank-score">3,210</div></div>
+      <div class="rank-row"><div class="rank-num">7</div><div class="avatar" style="background:#3D5AFE">ي</div><div class="rank-name">يوسف حسن</div><div class="rank-time">⚡ 18.2s</div><div class="rank-score">2,890</div></div>
+      <div class="rank-row"><div class="rank-num">8</div><div class="avatar" style="background:#FFD700;color:#111">ل</div><div class="rank-name">ليلى سالم</div><div class="rank-time">⚡ 22.5s</div><div class="rank-score">2,450</div></div>
+    </div>
+
+    <div style="text-align:center;margin-top:28px">
+      <button class="btn btn-primary btn-big" onclick="switchView('teacher')">🔄 نشاط جديد</button>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ============ SOUND ENGINE (Web Audio API) ============ */
+const SFX = {
+  ctx: null, muted: false,
+  init(){ if(!this.ctx) this.ctx = new (window.AudioContext||window.webkitAudioContext)(); },
+  tone(freq, dur=0.15, type='sine', vol=0.2){
+    if(this.muted) return;
+    this.init();
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.value = vol;
+    g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + dur);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(); o.stop(this.ctx.currentTime + dur);
+  },
+  click(){ this.tone(800, 0.06, 'square', 0.12); },
+  select(){ this.tone(600, 0.1, 'sine', 0.15); },
+  correct(){
+    this.tone(523.25, 0.12, 'sine', 0.22);
+    setTimeout(()=>this.tone(659.25, 0.12, 'sine', 0.22), 120);
+    setTimeout(()=>this.tone(783.99, 0.2, 'sine', 0.25), 240);
+  },
+  wrong(){
+    this.tone(220, 0.15, 'sawtooth', 0.18);
+    setTimeout(()=>this.tone(180, 0.25, 'sawtooth', 0.18), 150);
+  },
+  tick(){ this.tone(1200, 0.05, 'square', 0.1); },
+  winner(){
+    const notes = [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5];
+    notes.forEach((n,i)=>setTimeout(()=>this.tone(n, 0.18, 'triangle', 0.25), i*140));
+  },
+  toggle(){ this.muted = !this.muted; return this.muted; }
+};
+
+/* Sound toggle button */
+document.getElementById('soundToggle').addEventListener('click', function(){
+  const muted = SFX.toggle();
+  this.textContent = muted ? '🔇' : '🔊';
+});
+
+/* ============ VIEW SWITCHING ============ */
+function switchView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelector(`.tab-btn[data-view="${name}"]`).classList.add('active');
+  SFX.click();
+  if(name==='results') launchConfetti();
+  if(name==='results') setTimeout(()=>SFX.winner(), 300);
+  if(name==='lobby') populateParticipants();
+}
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>switchView(btn.dataset.view));
+});
+
+/* ============ TEACHER BUILDER LOGIC ============ */
+// Question type selection
+document.querySelectorAll('.q-type').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    document.querySelectorAll('.q-type').forEach(e=>e.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('prevType').textContent = el.textContent.trim();
+    SFX.select();
+  });
+});
+
+// Time chip selection
+document.querySelectorAll('.time-chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('.time-chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    const t = chip.dataset.time;
+    document.getElementById('prevTime').textContent = t+'s';
+    SFX.select();
+  });
+});
+document.getElementById('customTime').addEventListener('input', e=>{
+  if(e.target.value){
+    document.querySelectorAll('.time-chip').forEach(c=>c.classList.remove('active'));
+    document.getElementById('prevTime').textContent = e.target.value+'s';
+  }
+});
+
+// Correct toggle
+document.addEventListener('click', e=>{
+  if(e.target.classList.contains('correct-toggle')){
+    document.querySelectorAll('.correct-toggle').forEach(t=>t.classList.remove('active'));
+    e.target.classList.add('active');
+    SFX.correct();
+  }
+  if(e.target.classList.contains('del-choice')){
+    e.target.closest('.choice-row').remove();
+    syncPreview();
+  }
+});
+
+// Live preview sync
+function syncPreview(){
+  document.getElementById('previewQText').textContent = document.getElementById('qText').value || '—';
+  const choices = [...document.querySelectorAll('#choicesList input[type=text]')].map(i=>i.value);
+  const letters = ['أ','ب','ج','د','ه','و','ز','ح'];
+  document.getElementById('previewChoices').innerHTML = choices.map((c,i)=>
+    `<div class="preview-choice"><span class="letter">${letters[i]}</span><span>${c||'—'}</span></div>`
+  ).join('');
+}
+document.getElementById('qText').addEventListener('input', syncPreview);
+document.getElementById('choicesList').addEventListener('input', syncPreview);
+
+// Add choice
+document.getElementById('addChoiceBtn').addEventListener('click', ()=>{
+  if(document.querySelectorAll('.choice-row').length >= 8) return;
+  const row = document.createElement('div');
+  row.className = 'choice-row';
+  row.innerHTML = `<button class="correct-toggle">✓</button><input type="text" placeholder="خيار جديد..."/><button class="del-choice">✕</button>`;
+  document.getElementById('choicesList').appendChild(row);
+  SFX.click();
+});
+
+// Start session
+document.getElementById('startSessionBtn').addEventListener('click', ()=>{
+  SFX.winner();
+  switchView('lobby');
+});
+
+/* ============ LOBBY ============ */
+const sampleStudents = [
+  {n:'عائشة', c:'#FFD700'},{n:'محمد', c:'#FF3366'},{n:'فاطمة', c:'#3D5AFE'},
+  {n:'خالد', c:'#00E676'},{n:'نورة', c:'#7C4DFF'},{n:'سارة', c:'#FF1744'},
+  {n:'يوسف', c:'#3D5AFE'},{n:'ليلى', c:'#FFD700'}
+];
+function populateParticipants(){
+  const grid = document.getElementById('participantGrid');
+  grid.innerHTML = '';
+  sampleStudents.forEach((s,i)=>{
+    setTimeout(()=>{
+      const el = document.createElement('div');
+      el.className = 'participant';
+      el.innerHTML = `<div class="avatar" style="background:${s.c};${s.c==='#FFD700'?'color:#111':''}">${s.n[0]}</div><div class="participant-name">${s.n}</div>`;
+      grid.appendChild(el);
+      SFX.tone(440 + i*30, 0.08, 'sine', 0.1);
+    }, i*200);
+  });
+}
+document.getElementById('startPlayBtn').addEventListener('click', ()=>{
+  SFX.winner();
+  switchView('play');
+  setTimeout(startTimer, 500);
+});
+
+/* ============ TIMER ENGINE ============ */
+let timerState = { total:20, left:20, interval:null, answered:false };
+function startTimer(){
+  const chip = document.querySelector('.time-chip.active');
+  timerState.total = chip ? parseInt(chip.dataset.time) : 20;
+  timerState.left = timerState.total;
+  timerState.answered = false;
+  const ring = document.getElementById('timerRing');
+  ring.classList.remove('warning','danger');
+  document.getElementById('timerText').textContent = timerState.left;
+  updateTimerRing();
+  // Re-enable answer buttons
+  document.querySelectorAll('.answer-btn').forEach(b=>{
+    b.disabled = false; b.classList.remove('selected','correct-flash','wrong-flash');
+  });
+  document.getElementById('feedbackBox').style.display = 'none';
+
+  clearInterval(timerState.interval);
+  timerState.interval = setInterval(()=>{
+    timerState.left--;
+    document.getElementById('timerText').textContent = timerState.left;
+    updateTimerRing();
+    if(timerState.left <= 5 && timerState.left > 0){
+      ring.classList.add('danger');
+      SFX.tick();
+    } else if(timerState.left <= 10){
+      ring.classList.add('warning');
+    }
+    if(timerState.left <= 0){
+      clearInterval(timerState.interval);
+      if(!timerState.answered) timeUp();
+    }
+  }, 1000);
+}
+function updateTimerRing(){
+  const bar = document.getElementById('timerBar');
+  const r = 52, circ = 2*Math.PI*r;
+  const pct = timerState.left / timerState.total;
+  bar.style.strokeDashoffset = circ * (1 - pct);
+}
+function timeUp(){
+  timerState.answered = true;
+  SFX.wrong();
+  document.querySelectorAll('.answer-btn').forEach(b=>b.disabled=true);
+  showFeedback(false, 0, 'انتهى الوقت! ⏰');
+}
+
+/* ============ ANSWER HANDLING ============ */
+const CORRECT_IDX = 1; // النيتروجين
+document.querySelectorAll('.answer-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    if(timerState.answered) return;
+    timerState.answered = true;
+    clearInterval(timerState.interval);
+    const idx = parseInt(btn.dataset.idx);
+    const correct = idx === CORRECT_IDX;
+    const timeBonus = Math.round((timerState.left / timerState.total) * 500);
+    const points = correct ? 500 + timeBonus : 0;
+
+    document.querySelectorAll('.answer-btn').forEach(b=>b.disabled=true);
+    btn.classList.add('selected');
+    SFX.select();
+
+    setTimeout(()=>{
+      if(correct){
+        btn.classList.add('correct-flash');
+        SFX.correct();
+        const cur = parseInt(document.getElementById('studentScore').textContent);
+        animateScore(cur, cur+points);
+      } else {
+        btn.classList.add('wrong-flash');
+        document.querySelectorAll('.answer-btn')[CORRECT_IDX].classList.add('correct-flash');
+        SFX.wrong();
+      }
+      showFeedback(correct, points);
+    }, 400);
+  });
+});
+function animateScore(from, to){
+  const el = document.getElementById('studentScore');
+  const dur = 800, steps = 30;
+  let i = 0;
+  const iv = setInterval(()=>{
+    i++;
+    el.textContent = Math.round(from + (to-from)*(i/steps));
+    if(i>=steps){ clearInterval(iv); el.textContent = to; }
+  }, dur/steps);
+}
+function showFeedback(correct, points, overrideMsg){
+  const box = document.getElementById('feedbackBox');
+  box.style.display='block';
+  if(overrideMsg){
+    box.innerHTML = `<div class="feedback wrong"><div class="big-icon">⏰</div><h3>${overrideMsg}</h3><div class="small">الإجابة الصحيحة: النيتروجين</div></div>`;
+  } else if(correct){
+    box.innerHTML = `<div class="feedback correct"><div class="big-icon">🎉</div><h3>إجابة صحيحة!</h3><div class="small">أحسنت، كنت سريعًا</div><div class="pts">+${points} نقطة</div></div>`;
+    launchConfetti(30);
+  } else {
+    box.innerHTML = `<div class="feedback wrong"><div class="big-icon">😔</div><h3>إجابة خاطئة</h3><div class="small">الإجابة الصحيحة: النيتروجين</div></div>`;
+  }
+  setTimeout(()=>{
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-primary btn-big';
+    btn.style.marginTop = '16px';
+    btn.innerHTML = '🏆 عرض الترتيب النهائي';
+    btn.onclick = ()=>switchView('results');
+    box.firstElementChild.appendChild(btn);
+  }, 400);
+}
+
+/* ============ CONFETTI ============ */
+function launchConfetti(count=80){
+  const colors = ['#FF3366','#00E676','#FFD700','#3D5AFE','#7C4DFF'];
+  for(let i=0;i<count;i++){
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random()*100 + '%';
+    c.style.background = colors[Math.floor(Math.random()*colors.length)];
+    c.style.animationDuration = (2 + Math.random()*2) + 's';
+    c.style.animationDelay = Math.random()*.5 + 's';
+    c.style.width = (6 + Math.random()*8) + 'px';
+    c.style.height = c.style.width;
+    c.style.borderRadius = Math.random() > .5 ? '50%' : '2px';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(), 4500);
+  }
+}
+
+// Initial preview sync
+syncPreview();
+</script>
+
+</body>
+</html>

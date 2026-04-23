@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QuizArena — أنواع الأسئلة التفاعلية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0B1E; --bg-2:#12122E; --card:#1A1A3A; --card-2:#23234A;
+    --border:#2A2A55; --text:#F5F5FF; --muted:#8B8BB5;
+    --pink:#FF3366; --green:#00E676; --yellow:#FFD700; --blue:#3D5AFE; --purple:#7C4DFF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Tajawal',sans-serif;
+    background:radial-gradient(ellipse at 20% 0%, rgba(124,77,255,.18), transparent 50%),
+               radial-gradient(ellipse at 80% 100%, rgba(255,51,102,.15), transparent 50%), var(--bg);
+    color:var(--text); min-height:100vh; padding:20px;
+  }
+  h1,h2,h3{font-family:'Cairo',sans-serif;font-weight:900}
+  .container{max-width:960px;margin:0 auto}
+
+  .header{text-align:center;margin-bottom:30px}
+  .header h1{font-size:32px;background:linear-gradient(135deg,var(--pink),var(--yellow));-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:8px}
+  .header p{color:var(--muted)}
+
+  /* Type selector */
+  .type-selector{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+    background:var(--card);padding:10px;border-radius:16px;margin-bottom:24px;border:1px solid var(--border);
+  }
+  @media(max-width:700px){.type-selector{grid-template-columns:repeat(2,1fr)}}
+  .type-btn{
+    padding:14px 8px;background:transparent;border:0;border-radius:10px;
+    color:var(--muted);cursor:pointer;font-family:'Cairo';font-weight:700;font-size:13px;
+    transition:all .2s;
+  }
+  .type-btn .ico{display:block;font-size:22px;margin-bottom:4px}
+  .type-btn.active{background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;transform:translateY(-2px);box-shadow:0 8px 20px rgba(124,77,255,.35)}
+  .type-btn:hover:not(.active){background:var(--bg-2);color:var(--text)}
+
+  /* Question card */
+  .q-card{
+    background:linear-gradient(135deg,#1E1E45,#2A2A5A);
+    border:1px solid var(--border);border-radius:20px;padding:30px;
+    margin-bottom:20px;box-shadow:0 20px 60px rgba(0,0,0,.45);
+    min-height:400px;
+  }
+  .q-text{font-size:22px;font-weight:900;font-family:'Cairo';margin-bottom:24px;text-align:center;line-height:1.5}
+
+  .demo-section{display:none}
+  .demo-section.active{display:block;animation:fadeIn .4s}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  /* ═══ MCQ ═══ */
+  .mcq-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:500px){.mcq-grid{grid-template-columns:1fr}}
+  .mcq-btn{
+    padding:20px;border-radius:14px;border:0;cursor:pointer;
+    font-family:'Cairo';font-weight:700;font-size:16px;color:#fff;
+    display:flex;align-items:center;gap:12px;text-align:right;transition:all .2s;
+  }
+  .mcq-btn:hover{transform:translateY(-2px) scale(1.02);filter:brightness(1.15)}
+  .mcq-btn .letter{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.25);display:grid;place-items:center;font-weight:900;flex-shrink:0}
+  .mcq-btn.c1{background:linear-gradient(135deg,#FF3366,#E91E63)}
+  .mcq-btn.c2{background:linear-gradient(135deg,#3D5AFE,#2962FF)}
+  .mcq-btn.c3{background:linear-gradient(135deg,#FFD700,#FF8F00);color:#1a1a1a}
+  .mcq-btn.c4{background:linear-gradient(135deg,#00E676,#00C853);color:#0B0B1E}
+
+  /* ═══ True/False ═══ */
+  .tf-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:500px;margin:0 auto}
+  .tf-btn{
+    padding:40px 20px;border-radius:20px;border:0;cursor:pointer;
+    font-family:'Cairo';font-weight:900;font-size:28px;color:#fff;
+    display:flex;flex-direction:column;align-items:center;gap:8px;transition:all .2s;
+  }
+  .tf-btn:hover{transform:translateY(-4px) scale(1.03);filter:brightness(1.15)}
+  .tf-btn .big-ico{font-size:48px}
+  .tf-btn.true{background:linear-gradient(135deg,#00E676,#00C853);color:#0B0B1E}
+  .tf-btn.false{background:linear-gradient(135deg,#FF3366,#E91E63)}
+
+  /* ═══ Fill Blank ═══ */
+  .fill-text{font-size:22px;line-height:2;text-align:center;margin-bottom:24px;font-family:'Cairo'}
+  .fill-input{
+    display:inline-block;min-width:140px;padding:8px 14px;border-radius:10px;
+    background:var(--bg-2);border:2px solid var(--pink);color:var(--text);
+    font-family:'Cairo';font-size:20px;font-weight:700;text-align:center;
+    margin:0 8px;transition:all .2s;
+  }
+  .fill-input:focus{outline:none;box-shadow:0 0 0 4px rgba(255,51,102,.25)}
+  .fill-submit{display:block;margin:16px auto 0}
+
+  /* ═══ Matching ═══ */
+  .match-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;max-width:600px;margin:0 auto}
+  .match-col{display:flex;flex-direction:column;gap:10px}
+  .match-col h4{color:var(--muted);font-size:13px;margin-bottom:4px;text-align:center}
+  .match-item{
+    padding:14px 18px;background:var(--bg-2);border:2px solid var(--border);
+    border-radius:12px;cursor:pointer;font-family:'Cairo';font-weight:700;
+    text-align:center;transition:all .2s;position:relative;
+  }
+  .match-item:hover{border-color:var(--pink)}
+  .match-item.selected{border-color:var(--yellow);background:rgba(255,215,0,.1);box-shadow:0 0 20px rgba(255,215,0,.3)}
+  .match-item.matched{border-color:var(--green);background:rgba(0,230,118,.1);opacity:.7;pointer-events:none}
+  .match-item.matched::after{content:'✓';position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--green);font-weight:900}
+
+  /* ═══ Ordering ═══ */
+  .order-list{display:flex;flex-direction:column;gap:10px;max-width:500px;margin:0 auto}
+  .order-item{
+    padding:16px 20px;background:var(--bg-2);border:2px solid var(--border);
+    border-radius:12px;cursor:grab;font-family:'Cairo';font-weight:700;
+    display:flex;align-items:center;gap:14px;transition:all .2s;user-select:none;
+  }
+  .order-item:hover{border-color:var(--purple)}
+  .order-item.dragging{opacity:.4}
+  .order-item.drag-over{border-color:var(--yellow);border-style:dashed;transform:scale(1.02)}
+  .order-num{
+    width:36px;height:36px;border-radius:50%;background:var(--purple);color:#fff;
+    display:grid;place-items:center;font-weight:900;flex-shrink:0;
+  }
+  .order-grip{margin-right:auto;color:var(--muted);font-size:20px;letter-spacing:2px}
+
+  /* ═══ Drag & Drop ═══ */
+  .drag-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:600px){.drag-layout{grid-template-columns:1fr}}
+  .drop-zone{
+    min-height:200px;background:var(--bg-2);border:3px dashed var(--border);
+    border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;transition:all .2s;
+  }
+  .drop-zone.drag-over{border-color:var(--green);background:rgba(0,230,118,.08)}
+  .drop-zone h4{color:var(--muted);font-size:13px;text-align:center;margin-bottom:4px;font-family:'Cairo'}
+  .drag-pool{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;min-height:80px;padding:14px;background:var(--bg-2);border-radius:14px;border:1px solid var(--border)}
+  .drag-chip{
+    padding:10px 18px;background:linear-gradient(135deg,var(--pink),#E91E63);color:#fff;
+    border-radius:10px;cursor:grab;font-family:'Cairo';font-weight:700;
+    user-select:none;transition:all .2s;
+  }
+  .drag-chip:hover{transform:scale(1.05)}
+  .drag-chip.dragging{opacity:.5}
+
+  /* ═══ Image Question ═══ */
+  .img-question{text-align:center}
+  .img-placeholder{
+    width:100%;max-width:400px;height:240px;margin:0 auto 20px;
+    background:linear-gradient(135deg,#4A90E2,#7C4DFF);border-radius:16px;
+    display:grid;place-items:center;font-size:80px;
+    box-shadow:0 12px 40px rgba(124,77,255,.3);
+  }
+
+  /* ═══ Connect ═══ */
+  .connect-board{position:relative;max-width:600px;margin:0 auto;padding:20px 0}
+  .connect-svg{position:absolute;inset:0;pointer-events:none}
+  .connect-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+  .connect-node{
+    padding:14px 18px;background:var(--bg-2);border:2px solid var(--border);
+    border-radius:12px;cursor:pointer;font-family:'Cairo';font-weight:700;
+    text-align:center;transition:all .2s;position:relative;
+  }
+  .connect-node:hover{border-color:var(--blue)}
+  .connect-node.active{border-color:var(--yellow);background:rgba(255,215,0,.1);box-shadow:0 0 20px rgba(255,215,0,.35)}
+  .connect-node.connected{border-color:var(--green)}
+
+  /* Feedback */
+  .feedback{
+    margin-top:20px;padding:20px;border-radius:14px;text-align:center;
+    font-family:'Cairo';font-weight:700;animation:fadeIn .3s;
+  }
+  .feedback.correct{background:rgba(0,230,118,.12);border:2px solid var(--green);color:var(--green)}
+  .feedback.wrong{background:rgba(255,51,102,.12);border:2px solid var(--pink);color:var(--pink)}
+  .feedback .ico{font-size:40px;margin-bottom:8px;display:block}
+
+  .btn{
+    padding:14px 24px;border:0;border-radius:12px;font-family:'Cairo';font-weight:700;
+    cursor:pointer;font-size:15px;transition:all .2s;display:inline-flex;align-items:center;gap:8px;
+  }
+  .btn-primary{background:linear-gradient(135deg,var(--pink),#FF0844);color:#fff;box-shadow:0 8px 22px rgba(255,51,102,.4)}
+  .btn-primary:hover{transform:translateY(-2px)}
+  .btn-success{background:linear-gradient(135deg,var(--green),#00C853);color:#0B0B1E}
+
+  .hint{text-align:center;color:var(--muted);font-size:13px;margin-top:14px;font-family:'Cairo'}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>🧩 أنواع الأسئلة التفاعلية</h1>
+    <p>جرّب كل نوع بنفسك — 8 أنواع مختلفة من الأسئلة</p>
+  </div>
+
+  <div class="type-selector" id="typeSelector">
+    <button class="type-btn active" data-type="mcq"><span class="ico">🎯</span>اختيار متعدد</button>
+    <button class="type-btn" data-type="tf"><span class="ico">⚖️</span>صح/خطأ</button>
+    <button class="type-btn" data-type="fill"><span class="ico">✍️</span>أكمل الفراغ</button>
+    <button class="type-btn" data-type="match"><span class="ico">🔗</span>مطابقة</button>
+    <button class="type-btn" data-type="order"><span class="ico">🔢</span>ترتيب</button>
+    <button class="type-btn" data-type="drag"><span class="ico">🖱️</span>سحب وإفلات</button>
+    <button class="type-btn" data-type="image"><span class="ico">🖼️</span>سؤال بصورة</button>
+    <button class="type-btn" data-type="connect"><span class="ico">🧩</span>توصيل</button>
+  </div>
+
+  <div class="q-card">
+
+    <!-- MCQ -->
+    <div class="demo-section active" id="demo-mcq">
+      <div class="q-text">ما هو العنصر الأكثر انتشارًا في الغلاف الجوي للأرض؟</div>
+      <div class="mcq-grid">
+        <button class="mcq-btn c1" data-correct="0"><span class="letter">أ</span>الأكسجين</button>
+        <button class="mcq-btn c2" data-correct="1"><span class="letter">ب</span>النيتروجين</button>
+        <button class="mcq-btn c3" data-correct="0"><span class="letter">ج</span>ثاني أكسيد الكربون</button>
+        <button class="mcq-btn c4" data-correct="0"><span class="letter">د</span>الهيدروجين</button>
+      </div>
+      <div class="hint">اختر إجابة واحدة</div>
+    </div>
+
+    <!-- True/False -->
+    <div class="demo-section" id="demo-tf">
+      <div class="q-text">تدور الأرض حول الشمس في مدار بيضاوي.</div>
+      <div class="tf-grid">
+        <button class="tf-btn true" data-correct="1"><span class="big-ico">✓</span>صح</button>
+        <button class="tf-btn false" data-correct="0"><span class="big-ico">✗</span>خطأ</button>
+      </div>
+    </div>
+
+    <!-- Fill Blank -->
+    <div class="demo-section" id="demo-fill">
+      <div class="q-text">أكمل الجملة</div>
+      <div class="fill-text">
+        الماء يتكون من ذرتين
+        <input type="text" class="fill-input" id="fillAns1" placeholder="—" />
+        وذرة واحدة من
+        <input type="text" class="fill-input" id="fillAns2" placeholder="—" />
+      </div>
+      <button class="btn btn-primary fill-submit" onclick="checkFill()">✓ تحقق</button>
+      <div class="hint">الإجابات الصحيحة: هيدروجين، أكسجين</div>
+    </div>
+
+    <!-- Matching -->
+    <div class="demo-section" id="demo-match">
+      <div class="q-text">طابق كل عنصر مع رمزه الكيميائي</div>
+      <div class="match-grid">
+        <div class="match-col">
+          <h4>العنصر</h4>
+          <div class="match-item" data-group="left" data-id="gold">الذهب</div>
+          <div class="match-item" data-group="left" data-id="water">الماء</div>
+          <div class="match-item" data-group="left" data-id="oxygen">الأكسجين</div>
+          <div class="match-item" data-group="left" data-id="iron">الحديد</div>
+        </div>
+        <div class="match-col">
+          <h4>الرمز</h4>
+          <div class="match-item" data-group="right" data-id="iron">Fe</div>
+          <div class="match-item" data-group="right" data-id="gold">Au</div>
+          <div class="match-item" data-group="right" data-id="oxygen">O₂</div>
+          <div class="match-item" data-group="right" data-id="water">H₂O</div>
+        </div>
+      </div>
+      <div class="hint">اضغط عنصرًا من الجهة اليمنى ثم ما يطابقه من الجهة اليسرى</div>
+    </div>
+
+    <!-- Ordering -->
+    <div class="demo-section" id="demo-order">
+      <div class="q-text">رتّب مراحل دورة الماء من البداية</div>
+      <div class="order-list" id="orderList">
+        <div class="order-item" draggable="true" data-order="3"><span class="order-num">؟</span>هطول الأمطار<span class="order-grip">⋮⋮</span></div>
+        <div class="order-item" draggable="true" data-order="1"><span class="order-num">؟</span>التبخر من البحار<span class="order-grip">⋮⋮</span></div>
+        <div class="order-item" draggable="true" data-order="4"><span class="order-num">؟</span>الجريان السطحي<span class="order-grip">⋮⋮</span></div>
+        <div class="order-item" draggable="true" data-order="2"><span class="order-num">؟</span>التكاثف وتكوّن السحب<span class="order-grip">⋮⋮</span></div>
+      </div>
+      <button class="btn btn-primary" style="margin:20px auto 0;display:block" onclick="checkOrder()">✓ تحقق من الترتيب</button>
+      <div class="hint">اسحب العناصر لترتيبها</div>
+    </div>
+
+    <!-- Drag & Drop -->
+    <div class="demo-section" id="demo-drag">
+      <div class="q-text">صنّف الكائنات حسب مملكتها</div>
+      <div class="drag-layout">
+        <div class="drop-zone" data-category="animal">
+          <h4>🐾 مملكة الحيوان</h4>
+        </div>
+        <div class="drop-zone" data-category="plant">
+          <h4>🌿 مملكة النبات</h4>
+        </div>
+      </div>
+      <div class="drag-pool" id="dragPool" style="margin-top:16px">
+        <div class="drag-chip" draggable="true" data-category="animal">🐘 الفيل</div>
+        <div class="drag-chip" draggable="true" data-category="plant">🌳 البلوط</div>
+        <div class="drag-chip" draggable="true" data-category="animal">🦅 النسر</div>
+        <div class="drag-chip" draggable="true" data-category="plant">🌹 الوردة</div>
+        <div class="drag-chip" draggable="true" data-category="animal">🐟 السمك</div>
+        <div class="drag-chip" draggable="true" data-category="plant">🌾 القمح</div>
+      </div>
+      <button class="btn btn-primary" style="margin:20px auto 0;display:block" onclick="checkDrag()">✓ تحقق</button>
+    </div>
+
+    <!-- Image Question -->
+    <div class="demo-section" id="demo-image">
+      <div class="q-text">ما اسم هذا الكوكب؟</div>
+      <div class="img-question">
+        <div class="img-placeholder">🪐</div>
+        <div class="mcq-grid">
+          <button class="mcq-btn c1" data-correct="0"><span class="letter">أ</span>المريخ</button>
+          <button class="mcq-btn c2" data-correct="0"><span class="letter">ب</span>المشتري</button>
+          <button class="mcq-btn c3" data-correct="1"><span class="letter">ج</span>زحل</button>
+          <button class="mcq-btn c4" data-correct="0"><span class="letter">د</span>نبتون</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connect -->
+    <div class="demo-section" id="demo-connect">
+      <div class="q-text">وصّل كل سبب بنتيجته</div>
+      <div class="connect-board">
+        <svg class="connect-svg" id="connectSvg"></svg>
+        <div class="connect-grid">
+          <div>
+            <div class="connect-node" data-group="a" data-id="1">⚡ الاحتكاك</div>
+            <div class="connect-node" data-group="a" data-id="2" style="margin-top:16px">☀️ حرارة الشمس</div>
+            <div class="connect-node" data-group="a" data-id="3" style="margin-top:16px">💧 البرودة الشديدة</div>
+          </div>
+          <div>
+            <div class="connect-node" data-group="b" data-id="2">💨 التبخر</div>
+            <div class="connect-node" data-group="b" data-id="3" style="margin-top:16px">❄️ التجمّد</div>
+            <div class="connect-node" data-group="b" data-id="1" style="margin-top:16px">🔥 توليد الحرارة</div>
+          </div>
+        </div>
+      </div>
+      <div class="hint">اضغط على عقدة من اليمين ثم ما يناسبها من اليسار</div>
+    </div>
+
+    <div id="feedbackBox"></div>
+  </div>
+</div>
+
+<script>
+/* Sound engine (compact) */
+const SFX = {
+  ctx: null, muted: false,
+  init(){ if(!this.ctx) this.ctx = new (window.AudioContext||window.webkitAudioContext)(); },
+  tone(f,d=0.15,t='sine',v=0.2){
+    if(this.muted) return;
+    this.init();
+    const o=this.ctx.createOscillator(),g=this.ctx.createGain();
+    o.type=t;o.frequency.value=f;g.gain.value=v;
+    g.gain.exponentialRampToValueAtTime(0.0001,this.ctx.currentTime+d);
+    o.connect(g);g.connect(this.ctx.destination);o.start();o.stop(this.ctx.currentTime+d);
+  },
+  click(){this.tone(800,.06,'square',.12)},
+  correct(){this.tone(523.25,.12);setTimeout(()=>this.tone(659.25,.12),120);setTimeout(()=>this.tone(783.99,.2),240)},
+  wrong(){this.tone(220,.15,'sawtooth');setTimeout(()=>this.tone(180,.25,'sawtooth'),150)}
+};
+
+/* Type switcher */
+document.querySelectorAll('.type-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.demo-section').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('demo-'+btn.dataset.type).classList.add('active');
+    document.getElementById('feedbackBox').innerHTML='';
+    SFX.click();
+  });
+});
+
+/* Show feedback */
+function showFeedback(correct, msg){
+  const box = document.getElementById('feedbackBox');
+  box.innerHTML = `<div class="feedback ${correct?'correct':'wrong'}">
+    <span class="ico">${correct?'🎉':'😔'}</span>
+    ${msg || (correct?'إجابة صحيحة! أحسنت':'إجابة خاطئة، حاول مرة أخرى')}
+  </div>`;
+  correct ? SFX.correct() : SFX.wrong();
+}
+
+/* MCQ + Image MCQ */
+document.querySelectorAll('.mcq-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const ok = b.dataset.correct==='1';
+    showFeedback(ok, ok?'إجابة صحيحة! +1000 نقطة':'إجابة خاطئة');
+  });
+});
+
+/* True/False */
+document.querySelectorAll('.tf-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const ok = b.dataset.correct==='1';
+    showFeedback(ok);
+  });
+});
+
+/* Fill Blank */
+function checkFill(){
+  const a1 = document.getElementById('fillAns1').value.trim();
+  const a2 = document.getElementById('fillAns2').value.trim();
+  const ok = /هيدروجين/.test(a1) && /أكسجين|اكسجين/.test(a2);
+  showFeedback(ok, ok?'ممتاز! H₂O صحيح':'الإجابة: هيدروجين، أكسجين');
+}
+
+/* Matching */
+let matchSelected = null;
+document.querySelectorAll('#demo-match .match-item').forEach(item=>{
+  item.addEventListener('click',()=>{
+    if(item.classList.contains('matched')) return;
+    if(!matchSelected){
+      document.querySelectorAll('#demo-match .match-item.selected').forEach(i=>i.classList.remove('selected'));
+      item.classList.add('selected');
+      matchSelected = item;
+      SFX.click();
+    } else if(matchSelected===item){
+      item.classList.remove('selected');
+      matchSelected = null;
+    } else if(matchSelected.dataset.group === item.dataset.group){
+      matchSelected.classList.remove('selected');
+      item.classList.add('selected');
+      matchSelected = item;
+    } else {
+      if(matchSelected.dataset.id === item.dataset.id){
+        item.classList.add('matched');
+        matchSelected.classList.add('matched');
+        matchSelected.classList.remove('selected');
+        SFX.correct();
+        const allMatched = document.querySelectorAll('#demo-match .match-item.matched').length === 8;
+        if(allMatched) showFeedback(true,'🎊 رائع! طابقت الجميع بنجاح');
+      } else {
+        matchSelected.classList.remove('selected');
+        SFX.wrong();
+        showFeedback(false,'غير متطابقين، حاول ثانية');
+      }
+      matchSelected = null;
+    }
+  });
+});
+
+/* Ordering (drag & drop) */
+let draggedOrder = null;
+document.querySelectorAll('#orderList .order-item').forEach(item=>{
+  item.addEventListener('dragstart',e=>{draggedOrder=item;item.classList.add('dragging')});
+  item.addEventListener('dragend',()=>{item.classList.remove('dragging');document.querySelectorAll('.order-item').forEach(i=>i.classList.remove('drag-over'))});
+  item.addEventListener('dragover',e=>{e.preventDefault();if(item!==draggedOrder) item.classList.add('drag-over')});
+  item.addEventListener('dragleave',()=>item.classList.remove('drag-over'));
+  item.addEventListener('drop',e=>{
+    e.preventDefault();
+    if(item===draggedOrder) return;
+    const list = document.getElementById('orderList');
+    const items = [...list.children];
+    const fromIdx = items.indexOf(draggedOrder);
+    const toIdx = items.indexOf(item);
+    if(fromIdx < toIdx) list.insertBefore(draggedOrder, item.nextSibling);
+    else list.insertBefore(draggedOrder, item);
+    updateOrderNumbers();
+    SFX.click();
+  });
+});
+function updateOrderNumbers(){
+  [...document.querySelectorAll('#orderList .order-item')].forEach((el,i)=>{
+    el.querySelector('.order-num').textContent = i+1;
+  });
+}
+updateOrderNumbers();
+function checkOrder(){
+  const items = [...document.querySelectorAll('#orderList .order-item')];
+  const ok = items.every((el,i)=>parseInt(el.dataset.order) === i+1);
+  showFeedback(ok, ok?'🌟 الترتيب صحيح تمامًا!':'الترتيب غير صحيح، حاول مرة أخرى');
+}
+
+/* Drag & Drop (categorize) */
+let draggedChip = null;
+document.querySelectorAll('.drag-chip').forEach(chip=>{
+  chip.addEventListener('dragstart',e=>{draggedChip=chip;chip.classList.add('dragging')});
+  chip.addEventListener('dragend',()=>chip.classList.remove('dragging'));
+});
+document.querySelectorAll('.drop-zone, .drag-pool').forEach(zone=>{
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag-over')});
+  zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
+  zone.addEventListener('drop',e=>{
+    e.preventDefault();zone.classList.remove('drag-over');
+    if(draggedChip) zone.appendChild(draggedChip);
+    SFX.click();
+  });
+});
+function checkDrag(){
+  let correct = 0, total = 6;
+  document.querySelectorAll('.drop-zone').forEach(zone=>{
+    const cat = zone.dataset.category;
+    zone.querySelectorAll('.drag-chip').forEach(c=>{
+      if(c.dataset.category === cat) correct++;
+    });
+  });
+  const ok = correct === total;
+  showFeedback(ok, ok?`🎯 ممتاز! صنفت جميع الـ${total} بشكل صحيح`:`صنفت ${correct} من ${total} بشكل صحيح`);
+}
+
+/* Connect */
+let connectSelected = null;
+const connections = [];
+document.querySelectorAll('.connect-node').forEach(node=>{
+  node.addEventListener('click',()=>{
+    if(!connectSelected){
+      document.querySelectorAll('.connect-node.active').forEach(n=>n.classList.remove('active'));
+      node.classList.add('active');
+      connectSelected = node;
+      SFX.click();
+    } else if(connectSelected === node){
+      node.classList.remove('active');
+      connectSelected = null;
+    } else if(connectSelected.dataset.group !== node.dataset.group){
+      if(connectSelected.dataset.id === node.dataset.id){
+        node.classList.add('connected');
+        connectSelected.classList.add('connected');
+        connectSelected.classList.remove('active');
+        drawConnection(connectSelected, node);
+        SFX.correct();
+        connections.push([connectSelected, node]);
+        if(connections.length === 3) showFeedback(true,'🏆 أحسنت! وصّلت كل العقد');
+      } else {
+        connectSelected.classList.remove('active');
+        SFX.wrong();
+        showFeedback(false,'هذه العقدة لا تتصل بهذه');
+      }
+      connectSelected = null;
+    }
+  });
+});
+function drawConnection(a,b){
+  const svg = document.getElementById('connectSvg');
+  const board = document.querySelector('.connect-board').getBoundingClientRect();
+  const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+  svg.setAttribute('viewBox',`0 0 ${board.width} ${board.height}`);
+  svg.style.width = board.width+'px'; svg.style.height = board.height+'px';
+  const x1 = ra.left + ra.width/2 - board.left;
+  const y1 = ra.top + ra.height/2 - board.top;
+  const x2 = rb.left + rb.width/2 - board.left;
+  const y2 = rb.top + rb.height/2 - board.top;
+  const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+  line.setAttribute('x1',x1);line.setAttribute('y1',y1);
+  line.setAttribute('x2',x2);line.setAttribute('y2',y2);
+  line.setAttribute('stroke','#00E676');line.setAttribute('stroke-width','3');
+  line.setAttribute('stroke-linecap','round');
+  line.style.strokeDasharray = '200';
+  line.style.strokeDashoffset = '200';
+  line.style.transition = 'stroke-dashoffset .5s';
+  svg.appendChild(line);
+  setTimeout(()=>line.style.strokeDashoffset = '0', 10);
+}
+</script>
+
+</body>
+</html>
